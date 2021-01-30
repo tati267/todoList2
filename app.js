@@ -1,4 +1,5 @@
-//list of tasks
+// Форма
+// Список задач
 const tasks = [
   {
     _id: '5d2ca9e2e03d40b326596aa7',
@@ -32,64 +33,67 @@ const tasks = [
   },
 ];
 
-(function (arrOfTasks) {
+(function(arrOfTasks) {
   const objOfTasks = arrOfTasks.reduce((acc, task) => {
     acc[task._id] = task;
     return acc;
-  }, {})
-  //Ellements UI
-  const listContainer = document.querySelector(".tasks-list-section .list-group");
-  //находим форму
-  const form = document.forms['addTask'];
-  const inputTitle = form.elements["title"];
-  const inputBody = form.elements["body"];
+  }, {});
 
-  //events
+  // Elemnts UI
+  const listContainer = document.querySelector(
+    '.tasks-list-section .list-group',
+  );
+  const form = document.forms['addTask'];
+  const inputTitle = form.elements['title'];
+  const inputBody = form.elements['body'];
+
+  // Events
   renderAllTasks(objOfTasks);
-  form.addEventListener("submit", onFormSubmitHandler);
-  ///создали функцию которая на вход получает объект всех tasks
+  form.addEventListener('submit', onFormSubmitHandler);
+  listContainer.addEventListener('click', onDeletehandler);
+
   function renderAllTasks(tasksList) {
-    ///проверяет что он передан
     if (!tasksList) {
-      console.error("Add list of tasks");
+      console.error('Передайте список задач!');
       return;
     }
-    //создаем фрагмент будущего списка с задачами чтобы не добавлять задачи по одной
+
     const fragment = document.createDocumentFragment();
-    //перебираем список task и передаем функцию listItemTemplate
     Object.values(tasksList).forEach(task => {
       const li = listItemTemplate(task);
       fragment.appendChild(li);
-    })
+    });
     listContainer.appendChild(fragment);
   }
-  // функция которая занимается генерацией элемент списка возвращает li
+
   function listItemTemplate({ _id, title, body } = {}) {
     const li = document.createElement('li');
     li.classList.add(
-      "list-group-item",
-      "d-flex",
-      "align-items-center",
-      "flex-wrap",
-      "mt-2"
+      'list-group-item',
+      'd-flex',
+      'align-items-center',
+      'flex-wrap',
+      'mt-2',
     );
+    li.setAttribute('data-task-id', _id);
 
-    const span = document.createElement("span");
+    const span = document.createElement('span');
     span.textContent = title;
-    span.style.fontWeight = "bold";
+    span.style.fontWeight = 'bold';
 
-    const deleteBtn = document.createElement("button");
-    deleteBtn.textContent = "Delete task";
-    deleteBtn.classList.add("btn", "btn-danger", "ml-auto", "delete-btn")
+    const deleteBtn = document.createElement('button');
+    deleteBtn.textContent = 'Delete task';
+    deleteBtn.classList.add('btn', 'btn-danger', 'ml-auto', 'delete-btn');
 
-    const article = document.createElement("p");
+    const article = document.createElement('p');
     article.textContent = body;
-    article.classList.add("mt-2", "w-100");
+    article.classList.add('mt-2', 'w-100');
 
     li.appendChild(span);
     li.appendChild(deleteBtn);
     li.appendChild(article);
-    return li
+
+    return li;
   }
 
   function onFormSubmitHandler(e) {
@@ -98,13 +102,14 @@ const tasks = [
     const bodyValue = inputBody.value;
 
     if (!titleValue || !bodyValue) {
-      alert("Please, write title and body");
+      alert('Пожалуйста введите title и body');
       return;
     }
+
     const task = createNewTask(titleValue, bodyValue);
     const listItem = listItemTemplate(task);
-    listContainer.insertAdjacentElement("afterbegin", listItem)
- form.reset();
+    listContainer.insertAdjacentElement('afterbegin', listItem);
+    form.reset();
   }
 
   function createNewTask(title, body) {
@@ -116,8 +121,30 @@ const tasks = [
     };
 
     objOfTasks[newTask._id] = newTask;
+
     return { ...newTask };
   }
 
+  function deleteTask(id) {
+    const { title } = objOfTasks[id];
+    const isConfirm = confirm(`Точно вы хотите удалить задачу: ${title}`);
+    if (!isConfirm) return isConfirm;
+    delete objOfTasks[id];
+    return isConfirm;
+  }
+
+  function deleteTaskFromHtml(confirmed, el) {
+    if (!confirmed) return;
+    el.remove();
+  }
+
+  function onDeletehandler({ target }) {
+    if (target.classList.contains('delete-btn')) {
+      const parent = target.closest('[data-task-id]');
+      const id = parent.dataset.taskId;
+      const confirmed = deleteTask(id);
+      deleteTaskFromHtml(confirmed, parent);
+    }
+  }
 
 })(tasks);
