@@ -39,20 +39,22 @@ const tasks = [
   }, {})
   //Ellements UI
   const listContainer = document.querySelector(".tasks-list-section .list-group");
-//находим форму
-const form = document.forms['addTask'];
-const inputTitle = form.elements["title"];
-const inputBody = form.elements["body"];
+  //находим форму
+  const form = document.forms['addTask'];
+  const inputTitle = form.elements["title"];
+  const inputBody = form.elements["body"];
 
+  //events
   renderAllTasks(objOfTasks);
-///создали функцию которая на вход получает объект всех tasks
+  form.addEventListener("submit", onFormSubmitHandler);
+  ///создали функцию которая на вход получает объект всех tasks
   function renderAllTasks(tasksList) {
     ///проверяет что он передан
     if (!tasksList) {
       console.error("Add list of tasks");
       return;
     }
-//создаем фрагмент будущего списка с задачами чтобы не добавлять задачи по одной
+    //создаем фрагмент будущего списка с задачами чтобы не добавлять задачи по одной
     const fragment = document.createDocumentFragment();
     //перебираем список task и передаем функцию listItemTemplate
     Object.values(tasksList).forEach(task => {
@@ -61,7 +63,7 @@ const inputBody = form.elements["body"];
     })
     listContainer.appendChild(fragment);
   }
-// функция которая занимается генерацией элемент списка возвращает li
+  // функция которая занимается генерацией элемент списка возвращает li
   function listItemTemplate({ _id, title, body } = {}) {
     const li = document.createElement('li');
     li.classList.add(
@@ -89,5 +91,33 @@ const inputBody = form.elements["body"];
     li.appendChild(article);
     return li
   }
+
+  function onFormSubmitHandler(e) {
+    e.preventDefault();
+    const titleValue = inputTitle.value;
+    const bodyValue = inputBody.value;
+
+    if (!titleValue || !bodyValue) {
+      alert("Please, write title and body");
+      return;
+    }
+    const task = createNewTask(titleValue, bodyValue);
+    const listItem = listItemTemplate(task);
+    listContainer.insertAdjacentElement("afterbegin", listItem)
+ form.reset();
+  }
+
+  function createNewTask(title, body) {
+    const newTask = {
+      title,
+      body,
+      completed: false,
+      _id: `task-${Math.random()}`,
+    };
+
+    objOfTasks[newTask._id] = newTask;
+    return { ...newTask };
+  }
+
 
 })(tasks);
